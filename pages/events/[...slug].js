@@ -1,10 +1,12 @@
-import { useRouter } from "next/router";
 import { Fragment, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import useSWR from "swr";
+import Head from "next/head";
+
+import { getFilteredEvents } from "../../helpers/api-util";
 import EventList from "../../components/events/event-list";
 import ResultsTitle from "../../components/events/results-title";
 import Button from "../../components/ui/button";
-import { getFilteredEvents } from "../../helpers/api-util";
 import ErrorAlert from "../../components/ui/error-alert";
 
 function FilteredEventsPage(props) {
@@ -27,12 +29,25 @@ function FilteredEventsPage(props) {
           ...data[key],
         });
       }
+
       setLoadedEvents(events);
     }
   }, [data]);
 
+  let pageHeadData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta name="description" content={`A list of filtered events.`} />
+    </Head>
+  );
+
   if (!loadedEvents) {
-    return <p className="center">Loading...</p>;
+    return (
+      <Fragment>
+        {pageHeadData}
+        <p className="center">Loading...</p>
+      </Fragment>
+    );
   }
 
   const filteredYear = filterData[0];
@@ -41,17 +56,28 @@ function FilteredEventsPage(props) {
   const numYear = +filteredYear;
   const numMonth = +filteredMonth;
 
+  pageHeadData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta
+        name="description"
+        content={`All events for ${numMonth}/${numYear}.`}
+      />
+    </Head>
+  );
+
   if (
     isNaN(numYear) ||
     isNaN(numMonth) ||
     numYear > 2030 ||
     numYear < 2021 ||
-    numMonth > 12 ||
     numMonth < 1 ||
+    numMonth > 12 ||
     error
   ) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p>Invalid filter. Please adjust your values!</p>
         </ErrorAlert>
@@ -73,6 +99,7 @@ function FilteredEventsPage(props) {
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p>No events found for the chosen filter!</p>
         </ErrorAlert>
@@ -87,6 +114,14 @@ function FilteredEventsPage(props) {
 
   return (
     <Fragment>
+      {pageHeadData}
+      <Head>
+        <title>Filtered Events</title>
+        <meta
+          name="description"
+          content={`All events for ${numMonth}/${numYear}.`}
+        />
+      </Head>
       <ResultsTitle date={date} />
       <EventList items={filteredEvents} />
     </Fragment>
@@ -109,16 +144,15 @@ function FilteredEventsPage(props) {
 //     isNaN(numMonth) ||
 //     numYear > 2030 ||
 //     numYear < 2021 ||
-//     numMonth > 12 ||
 //     numMonth < 1 ||
-//     error
+//     numMonth > 12
 //   ) {
 //     return {
 //       props: { hasError: true },
-//       // notFound: true, // or
+//       // notFound: true,
 //       // redirect: {
-//       //   destination: "/error",
-//       // },
+//       //   destination: '/error'
+//       // }
 //     };
 //   }
 
